@@ -2,34 +2,32 @@
 #include <SoftwareSerial.h>
 #include <Servo.h>
 
-SoftwareSerial BTSerial(10, 11); //RX, TX
+SoftwareSerial BTSerial(19, 18); //RX, TX
 
-// const int ENA_HT = 2;   // PWM motor direito traseiro
-// const int ENB_HT = 3;   // PWM motor esquerdo traseiro
-// const int IN1_HT = 7;   // Controle motor esquerdo traseiro
-// const int IN2_HT = 6;
-// const int IN3_HT = 5;   // Controle motor direito traseiro
-// const int IN4_HT = 4;
-// const int IN1_HD = 8;   // Controle motor esquerdo dianteiro
-// const int IN2_HD = 9;
-// const int IN3_HD = 10;  // Controle motor direito dianteiro
-// const int IN4_HD = 11;
+const int ENA_HT = 2;   // PWM motor direito traseiro
+const int ENB_HT = 3;   // PWM motor esquerdo traseiro
+const int IN1_HT = 34;   // Controle motor esquerdo traseiro
+const int IN2_HT = 35;
+const int IN3_HT = 36;   // Controle motor direito traseiro
+const int IN4_HT = 37;
+const int IN1_HD = 30;   // Controle motor esquerdo dianteiro
+const int IN2_HD = 31;
+const int IN3_HD = 32;  // Controle motor direito dianteiro
+const int IN4_HD = 33;
 
-const int servoEsqFrentePin = 4;
-const int servoDirFrentePin = 5;
-const int servoEsqTrasPin = 6;
-const int servoDirTrasPin = 7;
+const int servoEsqFrentePin = 12;
+const int servoDirFrentePin = 44;
+const int servoEsqTrasPin = 45;
+const int servoDirTrasPin = 46;
 Servo servoEsqFrente;
 Servo servoDirFrente;
 Servo servoEsqTras;
 Servo servoDirTras;
 
-const int trigFrente = 46;
-const int echoFrente = 44;
+// const int trigFrente = 46;
+// const int echoFrente = 44;
 const int infraRedPin = 19;
 const int redLedPin = 22;
-
-#define SerialRPi Serial
 
 // Configuração dos servos
 const int servoCentroEsq = 110;
@@ -38,19 +36,16 @@ const int SERVO_ANGULO_MAX = 45; // Ângulo máximo de esterçamento
 
 unsigned long ultimaAtualizacao = 0;
 
-String data = '0'
+char data = '0';
 
 // =================== CONFIGURAÇÃO INICIAL ===================
 void setup() {
   pinMode(ENA_HT, OUTPUT);
   pinMode(ENB_HT, OUTPUT);
   for (int i = 4; i <= 11; i++) pinMode(i, OUTPUT);
-
-  pinMode(trigFrente, OUTPUT);
-  pinMode(echoFrente, INPUT);
   pinMode(redLedPin, OUTPUT);
 
-  IrReceiver.begin(infraRedPin);
+  // IrReceiver.begin(infraRedPin);
   servoEsqFrente.attach(servoEsqFrentePin);
   servoDirFrente.attach(servoDirFrentePin);
   servoEsqTras.attach(servoEsqTrasPin);
@@ -68,19 +63,23 @@ void setup() {
 
 void loop() {
   if (BTSerial.available()) {
-    data = BTSerial.readStringUntil('\n');
+    data = BTSerial.read();
     
     switch(data) {
       case '0':
+        Serial.println("Motores parados - Aguardando comenado");
         pararMotores();
         break;
       case 'A':
+        Serial.println("Executar Passada");
         executarPassada();
         break;
       case 'B':
+        Serial.println("Executar Teste dos Servos");
         executarTesteServos();
         break;
       case 'C':
+        Serial.println("Executar Danca!");
         executarDanca();
         break;
     }
@@ -119,7 +118,10 @@ void loop() {
 
 void executarPassada() {
   mover(150, 150);
-  delay(5000);
+  delay(3000);
+
+  mover(-150, -150);
+  delay(3000);
 
   data = '0';
 }
@@ -236,58 +238,58 @@ void curvaDireita(int angulo, int tempo) {
 }
 
 // =================== FUNÇÕES DE SENSORIAMENTO ===================
-float medirDistancia(int trigPin, int echoPin) {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+// float medirDistancia(int trigPin, int echoPin) {
+//   digitalWrite(trigPin, LOW);
+//   delayMicroseconds(2);
+//   digitalWrite(trigPin, HIGH);
+//   delayMicroseconds(10);
+//   digitalWrite(trigPin, LOW);
   
-  long duracao = pulseIn(echoPin, HIGH);
-  return (duracao * 0.0343) / 2;  // Distância em cm
-}
+//   long duracao = pulseIn(echoPin, HIGH);
+//   return (duracao * 0.0343) / 2;  // Distância em cm
+// }
 
-void verificarObstaculos() {
-  float distFrente = medirDistancia(trigFrente, echoFrente);
-  float distEsq = medirDistancia(trigEsq, echoEsq);
-  float distDir = medirDistancia(trigDir, echoDir);
+// void verificarObstaculos() {
+//   float distFrente = medirDistancia(trigFrente, echoFrente);
+//   float distEsq = medirDistancia(trigEsq, echoEsq);
+//   float distDir = medirDistancia(trigDir, echoDir);
 
-  // Obstáculo frontal crítico
-  if (distFrente < 15) {
-    Serial.println("Obstaculo frontal detectado!");
-    pararMotores();
-    delay(300);
+//   // Obstáculo frontal crítico
+//   if (distFrente < 15) {
+//     Serial.println("Obstaculo frontal detectado!");
+//     pararMotores();
+//     delay(300);
     
-    if (distEsq > distDir) {
-      girarEsquerda(SERVO_ANGULO_MAX);
-    } else {
-      girarDireita(SERVO_ANGULO_MAX);
-    }
-    mover(100, 100);
-    delay(800);
-    alinharServos();
-  }
-}
+//     if (distEsq > distDir) {
+//       girarEsquerda(SERVO_ANGULO_MAX);
+//     } else {
+//       girarDireita(SERVO_ANGULO_MAX);
+//     }
+//     mover(100, 100);
+//     delay(800);
+//     alinharServos();
+//   }
+// }
 
 // =================== CONTROLE POR IR ===================
-void verificarControleIR() {
-  if (IrReceiver.decode()) {
-    if (IrReceiver.decodedIRData.decodedRawData == 0xE916FF00) {
-      sistemaAtivo = true;
-      estadoAtual = MARCO_2;
-      piscarLED(LED_STATUS_PIN, 1, 500);
-      Serial.println("Sistema ATIVADO - Iniciando Marco 1");
-    }
-    else if (IrReceiver.decodedIRData.decodedRawData == 0xF20DFF00) {
-      sistemaAtivo = false;
-      estadoAtual = INICIO;
-      pararMotores();
-      piscarLED(LED_STATUS_PIN, 2, 200);
-      Serial.println("Sistema DESATIVADO");
-    }
-    IrReceiver.resume();
-  }
-}
+// void verificarControleIR() {
+//   if (IrReceiver.decode()) {
+//     if (IrReceiver.decodedIRData.decodedRawData == 0xE916FF00) {
+//       sistemaAtivo = true;
+//       estadoAtual = MARCO_2;
+//       piscarLED(LED_STATUS_PIN, 1, 500);
+//       Serial.println("Sistema ATIVADO - Iniciando Marco 1");
+//     }
+//     else if (IrReceiver.decodedIRData.decodedRawData == 0xF20DFF00) {
+//       sistemaAtivo = false;
+//       estadoAtual = INICIO;
+//       pararMotores();
+//       piscarLED(LED_STATUS_PIN, 2, 200);
+//       Serial.println("Sistema DESATIVADO");
+//     }
+//     IrReceiver.resume();
+//   }
+// }
 
 // ==========================================================
 // =================== FUNÇÕES AUXILIARES ===================
