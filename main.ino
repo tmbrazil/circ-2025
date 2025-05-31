@@ -9,7 +9,6 @@ const int ENB_HD = 3;   // PWM PONTE H DIANTEIRA
 const int ENA_HT = 4;   // PWM PONTE H TRASEIRA
 const int ENB_HT = 5;   // PWM PONTE H TRASEIRA
 
-
 const int IN1_HT = 34;   // Controle motor esquerdo traseiro
 const int IN2_HT = 43;
 const int IN3_HT = 42;   // Controle motor direito traseiro
@@ -44,10 +43,21 @@ char data = '0';
 
 // =================== CONFIGURAÇÃO INICIAL ===================
 void setup() {
+  pinMode(ENA_HD, OUTPUT);
+  pinMode(ENB_HD, OUTPUT);
+  
+  pinMode(IN1_HD, OUTPUT);
+  pinMode(IN2_HD, OUTPUT);
+  pinMode(IN3_HD, OUTPUT);
+  pinMode(IN4_HD, OUTPUT);
+  pinMode(IN1_HT, OUTPUT);
+  pinMode(IN2_HT, OUTPUT);
+  pinMode(IN3_HT, OUTPUT);
+  pinMode(IN4_HT, OUTPUT);
+  
   pinMode(ENA_HT, OUTPUT);
   pinMode(ENB_HT, OUTPUT);
-  for (int i = 4; i <= 11; i++) pinMode(i, OUTPUT);
-  pinMode(redLedPin, OUTPUT);
+
 
   // IrReceiver.begin(infraRedPin);
   servoEsqFrente.attach(servoEsqFrentePin);
@@ -177,7 +187,29 @@ void mover(int velEsq, int velDir) {
   digitalWrite(IN3_HD, velDir > 0);
   digitalWrite(IN4_HD, velDir <= 0);
 
+  analogWrite(ENA_HD, abs(velEsq));
   analogWrite(ENB_HT, abs(velEsq));
+  
+  analogWrite(ENB_HD, abs(velDir));
+  analogWrite(ENA_HT, abs(velDir));
+}
+
+void moverCurva(int velEsq, int velDir, int angulo) {
+  digitalWrite(IN1_HT, velEsq > 0);
+  digitalWrite(IN2_HT, velEsq <= 0);
+  digitalWrite(IN1_HD, velEsq > 0);
+  digitalWrite(IN2_HD, velEsq <= 0);
+  digitalWrite(IN3_HT, velDir > 0);
+  digitalWrite(IN4_HT, velDir <= 0);
+  digitalWrite(IN3_HD, velDir > 0);
+  digitalWrite(IN4_HD, velDir <= 0);
+  
+  int velocidadeMeio = (int)(cos(angulo) * velEsq);
+
+  analogWrite(ENA_HD, abs(velocidadeMeio));
+  analogWrite(ENB_HT, abs(velocidadeMeio));
+  
+  analogWrite(ENB_HD, abs(velEsq));
   analogWrite(ENA_HT, abs(velDir));
 }
 
