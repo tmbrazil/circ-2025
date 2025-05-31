@@ -4,12 +4,16 @@
 
 SoftwareSerial BTSerial(19, 18); //RX, TX
 
-const int ENA_HT = 2;   // PWM motor direito traseiro
-const int ENB_HT = 3;   // PWM motor esquerdo traseiro
+const int ENA_HD = 2;   // PWM PONTE H DIANTEIRA
+const int ENB_HD = 3;   // PWM PONTE H DIANTEIRA
+const int ENA_HT = 4;   // PWM PONTE H TRASEIRA
+const int ENB_HT = 5;   // PWM PONTE H TRASEIRA
+
+
 const int IN1_HT = 34;   // Controle motor esquerdo traseiro
-const int IN2_HT = 35;
-const int IN3_HT = 36;   // Controle motor direito traseiro
-const int IN4_HT = 37;
+const int IN2_HT = 43;
+const int IN3_HT = 42;   // Controle motor direito traseiro
+const int IN4_HT = 35;
 const int IN1_HD = 30;   // Controle motor esquerdo dianteiro
 const int IN2_HD = 31;
 const int IN3_HD = 32;  // Controle motor direito dianteiro
