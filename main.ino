@@ -177,7 +177,7 @@ void executarDanca() {
 }
 
 // =================== FUNÇÕES DE CONTROLE ===================
-void mover(int velEsq, int velDir) {
+void mover(int velEsq, int velDir, int angulo=0) {
   digitalWrite(IN1_HT, velEsq > 0);
   digitalWrite(IN2_HT, velEsq <= 0);
   digitalWrite(IN1_HD, velEsq > 0);
@@ -187,31 +187,40 @@ void mover(int velEsq, int velDir) {
   digitalWrite(IN3_HD, velDir > 0);
   digitalWrite(IN4_HD, velDir <= 0);
 
-  analogWrite(ENA_HD, abs(velEsq));
-  analogWrite(ENB_HT, abs(velEsq));
-  
-  analogWrite(ENB_HD, abs(velDir));
-  analogWrite(ENA_HT, abs(velDir));
+  if (angulo != 0) {
+    int velocidadeMeio = (int)(cos(angulo) * velEsq);
+    analogWrite(ENA_HD, abs(velocidadeMeio));
+    analogWrite(ENB_HD, abs(velocidadeMeio));
+
+    analogWrite(ENA_HT, abs(velDir));
+    analogWrite(ENB_HT, abs(velEsq));
+  } else {
+    analogWrite(ENA_HD, abs(velEsq));
+    analogWrite(ENB_HT, abs(velEsq));
+
+    analogWrite(ENB_HD, abs(velDir));
+    analogWrite(ENA_HT, abs(velDir));
+  }
 }
 
-void moverCurva(int velEsq, int velDir, int angulo) {
-  digitalWrite(IN1_HT, velEsq > 0);
-  digitalWrite(IN2_HT, velEsq <= 0);
-  digitalWrite(IN1_HD, velEsq > 0);
-  digitalWrite(IN2_HD, velEsq <= 0);
-  digitalWrite(IN3_HT, velDir > 0);
-  digitalWrite(IN4_HT, velDir <= 0);
-  digitalWrite(IN3_HD, velDir > 0);
-  digitalWrite(IN4_HD, velDir <= 0);
+// void moverCurva(int velEsq, int velDir, int angulo) {
+//   digitalWrite(IN1_HT, velEsq > 0);
+//   digitalWrite(IN2_HT, velEsq <= 0);
+//   digitalWrite(IN1_HD, velEsq > 0);
+//   digitalWrite(IN2_HD, velEsq <= 0);
+//   digitalWrite(IN3_HT, velDir > 0);
+//   digitalWrite(IN4_HT, velDir <= 0);
+//   digitalWrite(IN3_HD, velDir > 0);
+//   digitalWrite(IN4_HD, velDir <= 0);
   
-  int velocidadeMeio = (int)(cos(angulo) * velEsq);
+//   int velocidadeMeio = (int)(cos(angulo) * velEsq);
 
-  analogWrite(ENA_HD, abs(velocidadeMeio));
-  analogWrite(ENB_HT, abs(velocidadeMeio));
+//   analogWrite(ENA_HD, abs(velocidadeMeio));
+//   analogWrite(ENB_HT, abs(velocidadeMeio));
   
-  analogWrite(ENB_HD, abs(velEsq));
-  analogWrite(ENA_HT, abs(velDir));
-}
+//   analogWrite(ENB_HD, abs(velEsq));
+//   analogWrite(ENA_HT, abs(velDir));
+// }
 
 void pararMotores() {
   mover(0, 0);
@@ -255,7 +264,7 @@ void curvaEsquerda(int angulo, int tempo) {
   girarEsquerda(angulo);
   delay(100);
 
-  moverCurva(100, 100, -angulo);
+  mover(100, 100, -angulo);
   delay(tempo);
 
   alinharServos();
@@ -266,7 +275,7 @@ void curvaDireita(int angulo, int tempo) {
   girarDireita(angulo);
   delay(100);
 
-  moverCurva(100, 100, angulo);
+  mover(100, 100, angulo);
   delay(tempo);
 
   alinharServos();
