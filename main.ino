@@ -255,7 +255,7 @@ void curvaEsquerda(int angulo, int tempo) {
   girarEsquerda(angulo);
   delay(100);
 
-  mover(100,100);
+  moverCurva(100, 100, -angulo);
   delay(tempo);
 
   alinharServos();
@@ -266,7 +266,7 @@ void curvaDireita(int angulo, int tempo) {
   girarDireita(angulo);
   delay(100);
 
-  mover(100,100);
+  moverCurva(100, 100, angulo);
   delay(tempo);
 
   alinharServos();
