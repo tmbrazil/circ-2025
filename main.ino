@@ -130,52 +130,6 @@ void loop() {
     // }
 }
 
-void executarPassada() {
-  mover(150, 150);
-  delay(3000);
-
-  mover(-150, -150);
-  delay(3000);
-
-  data = '0';
-}
-
-void executarTesteServos() {
-  girarEsquerda(90);
-  delay(500);
-  girarDireita(90);
-  delay(500);
-
-  girarEsquerda(90);
-  delay(500);
-  girarDireita(90);
-  delay(500);
-
-  alinharServos();
-  delay(100);
-
-  mover(200,200);
-  delay(1000);
-
-  curvaEsquerda(90, 3000);
-
-  mover(200,200);
-  delay(1000);
-
-  curvaDireita(90, 3000);
-
-  pararMotores();
-
-  data = '0';
-}
-
-void executarDanca() {
-  curvaDireita(90, 5000);
-  curvaEsquerda(90, 5000);
-
-  data = '0';
-}
-
 // =================== FUNÇÕES DE CONTROLE ===================
 void mover(int velEsq, int velDir, int angulo=0) {
   digitalWrite(IN1_HT, velEsq > 0);
@@ -346,4 +300,51 @@ void piscarLED(int pin, int vezes, int intervalo) {
     digitalWrite(pin, LOW);
     if (i < vezes - 1) delay(intervalo);
   }
+}
+
+// EXECUTAR
+void executarPassada() {
+  mover(150, 150);
+  delay(3000);
+
+  mover(-150, -150);
+  delay(3000);
+
+  data = '0';
+}
+
+void executarTesteServos() {
+  girarEsquerda(90);
+  delay(500);
+  girarDireita(90);
+  delay(500);
+
+  girarEsquerda(90);
+  delay(500);
+  girarDireita(90);
+  delay(500);
+
+  alinharServos();
+  delay(100);
+
+  mover(200,200);
+  delay(1000);
+
+  curvaEsquerda(90, 3000);
+
+  mover(200,200);
+  delay(1000);
+
+  curvaDireita(90, 3000);
+
+  pararMotores();
+
+  data = '0';
+}
+
+void executarDanca() {
+  curvaDireita(90, 5000);
+  curvaEsquerda(90, 5000);
+
+  data = '0';
 }
