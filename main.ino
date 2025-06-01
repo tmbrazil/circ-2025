@@ -75,29 +75,68 @@ void setup() {
   Serial.println("Sistema Pronto - Aguardando ativacao (*)");
 }
 
-void loop() {
-  if (BTSerial.available()) {
-    data = BTSerial.read();
-    
-    switch(data) {
-      case '0':
-        Serial.println("Motores parados - Aguardando comenado");
-        pararMotores();
-        break;
-      case 'A':
-        Serial.println("Executar Passada");
-        executarPassada();
-        break;
-      case 'B':
-        Serial.println("Executar Teste dos Servos");
-        executarTesteServos();
-        break;
-      case 'C':
-        Serial.println("Executar Danca!");
-        executarDanca();
-        break;
-    }
+void mover(int velEsq, int velDir, int angulo=0) {
+  digitalWrite(IN1_HT, velEsq > 0);
+  digitalWrite(IN2_HT, velEsq <= 0);
+  digitalWrite(IN1_HD, velEsq > 0);
+  digitalWrite(IN2_HD, velEsq <= 0);
+  digitalWrite(IN3_HT, velDir > 0);
+  digitalWrite(IN4_HT, velDir <= 0);
+  digitalWrite(IN3_HD, velDir > 0);
+  digitalWrite(IN4_HD, velDir <= 0);
+
+  if (angulo != 0) {
+    int velocidadeMeio = (int)(cos(angulo) * velEsq);
+    analogWrite(ENA_HD, abs(velocidadeMeio));
+    analogWrite(ENB_HD, abs(velocidadeMeio));
+
+    analogWrite(ENA_HT, abs(velDir));
+    analogWrite(ENB_HT, abs(velEsq));
+  } else {
+    analogWrite(ENA_HD, abs(velEsq));
+    analogWrite(ENB_HT, abs(velEsq));
+
+    analogWrite(ENB_HD, abs(velDir));
+    analogWrite(ENA_HT, abs(velDir));
   }
+}
+
+void loop() {
+  delay(3000);
+  mover(100, 100);
+  delay(3000);
+
+  girarEsquerda(30);
+  delay(500);
+
+  girarDireita(30);
+  delay(500);
+
+  alinharServos();
+  delay(200);
+
+  // if (BTSerial.available()) {
+  //   data = BTSerial.read();
+    
+  //   switch(data) {
+  //     case '0':
+  //       Serial.println("Motores parados - Aguardando comenado");
+  //       pararMotores();
+  //       break;
+  //     case 'A':
+  //       Serial.println("Executar Passada");
+  //       executarPassada();
+  //       break;
+  //     case 'B':
+  //       Serial.println("Executar Teste dos Servos");
+  //       executarTesteServos();
+  //       break;
+  //     case 'C':
+  //       Serial.println("Executar Danca!");
+  //       executarDanca();
+  //       break;
+  //   }
+  // }
     
     //   // Atualização da velocidade (executa a cada 50ms)
     // if (millis() - ultimaAtualizacao >= 50) {
@@ -128,34 +167,11 @@ void loop() {
     //     atualizarVelocidade();
     //     ultimaAtualizacao = millis();
     // }
+
 }
 
 // =================== FUNÇÕES DE CONTROLE ===================
-void mover(int velEsq, int velDir, int angulo=0) {
-  digitalWrite(IN1_HT, velEsq > 0);
-  digitalWrite(IN2_HT, velEsq <= 0);
-  digitalWrite(IN1_HD, velEsq > 0);
-  digitalWrite(IN2_HD, velEsq <= 0);
-  digitalWrite(IN3_HT, velDir > 0);
-  digitalWrite(IN4_HT, velDir <= 0);
-  digitalWrite(IN3_HD, velDir > 0);
-  digitalWrite(IN4_HD, velDir <= 0);
 
-  if (angulo != 0) {
-    int velocidadeMeio = (int)(cos(angulo) * velEsq);
-    analogWrite(ENA_HD, abs(velocidadeMeio));
-    analogWrite(ENB_HD, abs(velocidadeMeio));
-
-    analogWrite(ENA_HT, abs(velDir));
-    analogWrite(ENB_HT, abs(velEsq));
-  } else {
-    analogWrite(ENA_HD, abs(velEsq));
-    analogWrite(ENB_HT, abs(velEsq));
-
-    analogWrite(ENB_HD, abs(velDir));
-    analogWrite(ENA_HT, abs(velDir));
-  }
-}
 
 // void moverCurva(int velEsq, int velDir, int angulo) {
 //   digitalWrite(IN1_HT, velEsq > 0);
