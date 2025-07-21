@@ -1,4 +1,4 @@
-#define CH1_PIN 1 // servos
+#define CH1_PIN 7 // servos
 #define CH3_PIN 3 // tracao
 #define CH5_PIN 5 // (cima - tracao / baixo - braco)
 #define MOTOR_ENB 10 // Pino de velocidade (Enable B), deve ser um pino PWM (~).
@@ -7,11 +7,11 @@
 
 #define RC_CENTER_PULSE 1490
 #define RC_SCALE_FACTOR 0.514
-#define DEADZONE_WIDTH 70
+#define DEADZONE_WIDTH 90
 
 int CH1;
 int CH3;
-bool CH5;
+int CH5;
 
 enum State {
     MOTOR,
@@ -37,21 +37,19 @@ void setup() {
 void loop() {
   lerControle();
   
-  
-  currentState = CH5 < 0 ? MOTOR : ARM
+  currentState = CH5 < 0 ? MOTOR : ARM;
   
   Serial.print("CH1: ");
   Serial.print(CH1);
   Serial.print(" | CH3: ");
   Serial.print(CH3);
-  Serial.print("| MODE: ");
+  Serial.print(" | MODE: ");
   
   if (currentState == MOTOR) {
-  Serial.print("MOTOR\n"); // Termina a linha com println
+  Serial.print("MOTOR\n");
   } else {
-  Serial.println("BRACO\n"); // Termina a linha com println
+  Serial.println("BRACO");
   }
-
 
   switch(currentState) {
     case MOTOR:
@@ -59,11 +57,11 @@ void loop() {
       break;
 
     case ARM:
-      Serial.println("controlando braco");
+      delay(100);
       break;
   }
 
-  delay(50);
+  delay(100);
 }
 
 void controlarMotor(int velocidade) {
@@ -84,9 +82,9 @@ void controlarMotor(int velocidade) {
 
 void lerControle(void) {
   CH1 = (pulseIn(CH1_PIN, HIGH) - RC_CENTER_PULSE);
-  if (CH1 == RC_CENTER_PULSE) {
+  if (CH1 == -RC_CENTER_PULSE) {
     CH1 = 0;
-  } else if (CH1 > -60 && CH1 < 60) {
+  } else if (CH1 > - DEADZONE_WIDTH && CH1 < DEADZONE_WIDTH) {
   CH1 = 0;
   } else if (CH1 > 0) {
   CH1 = CH1 * RC_SCALE_FACTOR;
@@ -103,5 +101,5 @@ void lerControle(void) {
   CH3 = CH3 * RC_SCALE_FACTOR;
   }
 
-  CH5 = (pulseIn(CH5_PIN, HIGH) - 1490);
+  CH5 = (pulseIn(CH5_PIN, HIGH) - RC_CENTER_PULSE);
 }
