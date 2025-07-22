@@ -13,12 +13,17 @@
 #define SERVO_RIGHT_B 46
 
 #define RC_CENTER_PULSE 1491
-#define RC_SCALE_FACTOR 0.513
+#define RC_SCALE_FACTOR 0.514
 #define DEADZONE_WIDTH 30
 
 int CH1;
 int CH3;
 int CH5;
+
+Servo servoEsqFrente;
+Servo servoDirFrente;
+Servo servoEsqTras;
+Servo servoDirTras;
 
 enum State {
     MOTOR,
@@ -43,10 +48,15 @@ void setup() {
   analogWrite(R_PWM, 0);
   analogWrite(L_PWM, 0);
 
-  Servo servoEsqFrente;
-  Servo servoDirFrente;
-  Servo servoEsqTras;
-  Servo servoDirTras;
+  servoEsqFrente.attach(SERVO_LEFT_F);
+  servoDirFrente.attach(SERVO_RIGHT_F);
+  servoEsqTras.attach(SERVO_LEFT_B);
+  servoDirTras.attach(SERVO_RIGHT_B);
+  
+  servoEsqFrente.write(0);
+  servoDirFrente.write(0);
+  servoEsqTras.write(0);
+  servoDirTras.write(0);
 }
 
 void loop() {
@@ -61,7 +71,7 @@ void loop() {
   Serial.print(" | MODE: ");
   
   if (currentState == MOTOR) {
-  Serial.print("MOTOR\n");
+  Serial.println("MOTOR");
   } else {
   Serial.println("BRACO");
   }
@@ -69,7 +79,7 @@ void loop() {
   switch(currentState) {
     case MOTOR:
       controlarMotor(CH3);
-      controlarServo(CH1);
+      // controlarServo(CH1);
       break;
 
     case ARM:
@@ -84,17 +94,21 @@ void controlarMotor(int velocidade) {
   
   if (velocidade >= 0) {
     //Mover para FRENTE
-    analogWrite(R_PWM, constrain(velocidade, 0, 255));
+    analogWrite(R_PWM, velocidade);
     analogWrite(L_PWM, 0);
   } else {
     // Mover para TRÁS
     analogWrite(R_PWM, 0);
-    analogWrite(L_PWM, constrain(abs(velocidade), 0, 255));
+    analogWrite(L_PWM, abs(velocidade));
   }
 }
 
 void controlarServo(int angle) {
+  servoEsqFrente.write(angle);
+  servoDirFrente.write(angle);
 
+  servoEsqTras.write(90 - angle);
+  servoDirTras.write(90 - angle);
 }
 
 void controlarServoBraco();
@@ -107,6 +121,9 @@ void lerControle(void) {
     CH1 = 0;
   } else {
   CH1 = CH1 * RC_SCALE_FACTOR;
+
+  CH1 = constrain(CH1, -255, 255);
+  CH1 = map(CH1, -255, 255, 60, 120);
   }
 
   CH3 = (pulseIn(CH3_PIN, HIGH) - RC_CENTER_PULSE);
@@ -116,6 +133,8 @@ void lerControle(void) {
     CH3 = 0;
   } else {
   CH3 = CH3 * RC_SCALE_FACTOR;
+
+  CH3 = constrain(CH3, -255, 255);
   }
 
   CH5 = (pulseIn(CH5_PIN, HIGH) - RC_CENTER_PULSE);
