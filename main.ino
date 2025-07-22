@@ -5,7 +5,7 @@
 #define CH5_PIN 32 // (cima - tracao / baixo - braco)
 
 #define R_PWM 5
-#define L_PWM 9
+#define L_PWM 6
 
 #define SERVO_LEFT_F 12
 #define SERVO_RIGHT_F 44
@@ -14,7 +14,7 @@
 
 #define RC_CENTER_PULSE 1491
 #define RC_SCALE_FACTOR 0.514
-#define DEADZONE_WIDTH 30
+#define DEADZONE_WIDTH 70
 
 int CH1;
 int CH3;
@@ -35,7 +35,7 @@ State currentState;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Iniciando o teste do motor...");
+  // Serial.println("Iniciando o teste do motor...");
 
   // pinMode(R_EN, OUTPUT);
   // pinMode(L_EN, OUTPUT);
@@ -62,30 +62,30 @@ void setup() {
 void loop() {
   lerControle();
   
-  currentState = CH5 < 0 ? MOTOR : ARM;
+  // currentState = CH5 < 0 ? MOTOR : ARM;
   
-  Serial.print("CH1: ");
-  Serial.print(CH1);
-  Serial.print(" | CH3: ");
-  Serial.print(CH3);
-  Serial.print(" | MODE: ");
+  // Serial.print("CH1: ");
+  // Serial.print(CH1);
+  // Serial.print(" | CH3: ");
+  // Serial.print(CH3);
+  // Serial.print(" | MODE: ");
   
-  if (currentState == MOTOR) {
-  Serial.println("MOTOR");
-  } else {
-  Serial.println("BRACO");
-  }
+  // if (currentState == MOTOR) {
+  // Serial.println("MOTOR");
+  // } else {
+  // Serial.println("BRACO");
+  // }
 
-  switch(currentState) {
-    case MOTOR:
-      controlarMotor(CH3);
-      // controlarServo(CH1);
-      break;
+  // switch(currentState) {
+  //   case MOTOR:
+  controlarMotor(CH3);
+  //     // controlarServo(CH1);
+  //     break;
 
-    case ARM:
-      delay(100);
-      break;
-  }
+  //   case ARM:
+  //     delay(100);
+  //     break;
+  // }
 
   delay(100);
 }
@@ -93,14 +93,21 @@ void loop() {
 void controlarMotor(int velocidade) {
   
   if (velocidade >= 0) {
+
     //Mover para FRENTE
     analogWrite(R_PWM, velocidade);
     analogWrite(L_PWM, 0);
+    Serial.println(velocidade);
   } else {
     // Mover para TRÁS
     analogWrite(R_PWM, 0);
-    analogWrite(L_PWM, abs(velocidade));
+    analogWrite(L_PWM, -velocidade);
+    Serial.println(-velocidade);
   }
+  // } else {
+  //   analogWrite(R_PWM, 0);
+  //   analogWrite(L_PWM, 0);
+  // }
 }
 
 void controlarServo(int angle) {
@@ -116,9 +123,9 @@ void controlarServoBraco();
 void lerControle(void) {
   CH1 = (pulseIn(CH1_PIN, HIGH) - RC_CENTER_PULSE);
   if (CH1 == -RC_CENTER_PULSE) {
-    CH1 = 0;
-  } else if ((abs(CH1) < DEADZONE_WIDTH)) {
-    CH1 = 0;
+    CH1 = 90;
+  } else if ((abs(CH1) < 90)) {
+    CH1 = 90;
   } else {
   CH1 = CH1 * RC_SCALE_FACTOR;
 
