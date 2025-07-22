@@ -103,10 +103,8 @@ void lerControle(void) {
   CH1 = (pulseIn(CH1_PIN, HIGH) - RC_CENTER_PULSE);
   if (CH1 == -RC_CENTER_PULSE) {
     CH1 = 0;
-  } else if (CH1 > - DEADZONE_WIDTH && CH1 < DEADZONE_WIDTH) {
-  CH1 = 0;
-  } else if (CH1 > 0) {
-  CH1 = CH1 * RC_SCALE_FACTOR;
+  } else if ((abs(CH1) < DEADZONE_WIDTH)) {
+    CH1 = 0;
   } else {
   CH1 = CH1 * RC_SCALE_FACTOR;
   }
