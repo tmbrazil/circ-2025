@@ -1,13 +1,20 @@
-#define CH1_PIN 7 // servos
-#define CH3_PIN 3 // tracao
-#define CH5_PIN 5 // (cima - tracao / baixo - braco)
-#define MOTOR_ENB 10 // Pino de velocidade (Enable B), deve ser um pino PWM (~).
-#define MOTOR_IN3 8  // Pino de direção 1
-#define MOTOR_IN4 9  // Pino de direção 2
+#include <Servo.h>
 
-#define RC_CENTER_PULSE 1490
-#define RC_SCALE_FACTOR 0.514
-#define DEADZONE_WIDTH 90
+#define CH1_PIN 30 // servos
+#define CH3_PIN 31 // tracao
+#define CH5_PIN 32 // (cima - tracao / baixo - braco)
+
+#define R_PWM 5
+#define L_PWM 9
+
+#define SERVO_LEFT_F 12
+#define SERVO_RIGHT_F 44
+#define SERVO_LEFT_B 45
+#define SERVO_RIGHT_B 46
+
+#define RC_CENTER_PULSE 1491
+#define RC_SCALE_FACTOR 0.513
+#define DEADZONE_WIDTH 30
 
 int CH1;
 int CH3;
@@ -25,13 +32,21 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Iniciando o teste do motor...");
 
-  pinMode(MOTOR_ENB, OUTPUT);
-  pinMode(MOTOR_IN3, OUTPUT);
-  pinMode(MOTOR_IN4, OUTPUT);
+  // pinMode(R_EN, OUTPUT);
+  // pinMode(L_EN, OUTPUT);
+  pinMode(R_PWM, OUTPUT);
+  pinMode(L_PWM, OUTPUT);
 
-  digitalWrite(MOTOR_IN3, LOW);
-  digitalWrite(MOTOR_IN4, LOW);
-  analogWrite(MOTOR_ENB, 0);
+  // digitalWrite(R_EN, HIGH);
+  // digitalWrite(L_EN, HIGH);
+
+  analogWrite(R_PWM, 0);
+  analogWrite(L_PWM, 0);
+
+  Servo servoEsqFrente;
+  Servo servoDirFrente;
+  Servo servoEsqTras;
+  Servo servoDirTras;
 }
 
 void loop() {
@@ -54,6 +69,7 @@ void loop() {
   switch(currentState) {
     case MOTOR:
       controlarMotor(CH3);
+      controlarServo(CH1);
       break;
 
     case ARM:
@@ -65,20 +81,23 @@ void loop() {
 }
 
 void controlarMotor(int velocidade) {
+  
   if (velocidade >= 0) {
-    // Mover para FRENTE
-    digitalWrite(MOTOR_IN3, HIGH);
-    digitalWrite(MOTOR_IN4, LOW);
+    //Mover para FRENTE
+    analogWrite(R_PWM, constrain(velocidade, 0, 255));
+    analogWrite(L_PWM, 0);
   } else {
     // Mover para TRÁS
-    digitalWrite(MOTOR_IN3, LOW);
-    digitalWrite(MOTOR_IN4, HIGH);
+    analogWrite(R_PWM, 0);
+    analogWrite(L_PWM, constrain(abs(velocidade), 0, 255));
   }
-
-  int velocidadeAbsoluta = abs(velocidade);
-
-  analogWrite(MOTOR_ENB, constrain(velocidadeAbsoluta, 0, 255));
 }
+
+void controlarServo(int angle) {
+
+}
+
+void controlarServoBraco();
 
 void lerControle(void) {
   CH1 = (pulseIn(CH1_PIN, HIGH) - RC_CENTER_PULSE);
