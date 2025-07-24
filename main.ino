@@ -1,23 +1,19 @@
 #include <Servo.h>
 
-#define CH1_PIN 30 // servos
-#define CH3_PIN 31 // tracao
-#define CH5_PIN 32 // (cima - tracao / baixo - braco)
+#define CH1_PIN 7 // servos
+#define CH2_PIN 8 // tracao
+#define CH5_PIN 13 // (cima - tracao / baixo - braco)
 
-#define R_PWM 5
-#define L_PWM 6
+#define RPWM_PIN 6
+#define LPWM_PIN 5
 
-#define SERVO_LEFT_F 12
-#define SERVO_RIGHT_F 44
-#define SERVO_LEFT_B 45
-#define SERVO_RIGHT_B 46
-
-#define RC_CENTER_PULSE 1491
-#define RC_SCALE_FACTOR 0.514
-#define DEADZONE_WIDTH 70
+#define SERVO_LEFT_F_PIN 12
+#define SERVO_RIGHT_F_PIN 44
+#define SERVO_LEFT_B_PIN 45
+#define SERVO_RIGHT_B_PIN 46
 
 int CH1;
-int CH3;
+int CH2;
 int CH5;
 
 Servo servoEsqFrente;
@@ -25,33 +21,21 @@ Servo servoDirFrente;
 Servo servoEsqTras;
 Servo servoDirTras;
 
-enum State {
-    MOTOR,
-    ARM,
-    STANDBY
-};
-
-State currentState;
+bool state;
 
 void setup() {
   Serial.begin(9600);
-  // Serial.println("Iniciando o teste do motor...");
 
-  // pinMode(R_EN, OUTPUT);
-  // pinMode(L_EN, OUTPUT);
-  pinMode(R_PWM, OUTPUT);
-  pinMode(L_PWM, OUTPUT);
+  pinMode(RPWM_PIN, OUTPUT);
+  pinMode(LPWM_PIN, OUTPUT);
 
-  // digitalWrite(R_EN, HIGH);
-  // digitalWrite(L_EN, HIGH);
+  analogWrite(RPWM_PIN, 0);
+  analogWrite(LPWM_PIN, 0);
 
-  analogWrite(R_PWM, 0);
-  analogWrite(L_PWM, 0);
-
-  servoEsqFrente.attach(SERVO_LEFT_F);
-  servoDirFrente.attach(SERVO_RIGHT_F);
-  servoEsqTras.attach(SERVO_LEFT_B);
-  servoDirTras.attach(SERVO_RIGHT_B);
+  servoEsqFrente.attach(SERVO_LEFT_F_PIN);
+  servoDirFrente.attach(SERVO_RIGHT_F_PIN);
+  servoEsqTras.attach(SERVO_LEFT_B_PIN);
+  servoDirTras.attach(SERVO_RIGHT_B_PIN);
   
   servoEsqFrente.write(0);
   servoDirFrente.write(0);
@@ -60,89 +44,55 @@ void setup() {
 }
 
 void loop() {
-  lerControle();
+  RC_READ();
   
-  // currentState = CH5 < 0 ? MOTOR : ARM;
-  
-  // Serial.print("CH1: ");
-  // Serial.print(CH1);
-  // Serial.print(" | CH3: ");
-  // Serial.print(CH3);
-  // Serial.print(" | MODE: ");
-  
-  // if (currentState == MOTOR) {
-  // Serial.println("MOTOR");
-  // } else {
-  // Serial.println("BRACO");
-  // }
+  state = CH5 < 0 ? 1 : 0;
 
-  // switch(currentState) {
-  //   case MOTOR:
-  controlarMotor(CH3);
-  //     // controlarServo(CH1);
-  //     break;
+  if (state) {
+    SET_MOTORS(CH2);
+    SET_SERVOS(CH1);
+    // Serial.print(CH1);
+    // Serial.print(" - ");
+    // Serial.println(CH2);
 
-  //   case ARM:
-  //     delay(100);
-  //     break;
-  // }
-
-  delay(100);
-}
-
-void controlarMotor(int velocidade) {
-  
-  if (velocidade >= 0) {
-
-    //Mover para FRENTE
-    analogWrite(R_PWM, velocidade);
-    analogWrite(L_PWM, 0);
-    Serial.println(velocidade);
   } else {
-    // Mover para TRÁS
-    analogWrite(R_PWM, 0);
-    analogWrite(L_PWM, -velocidade);
-    Serial.println(-velocidade);
+    Serial.println("B");
   }
-  // } else {
-  //   analogWrite(R_PWM, 0);
-  //   analogWrite(L_PWM, 0);
-  // }
+
+  delay(50);
 }
 
-void controlarServo(int angle) {
+void RC_READ(void) {
+  CH1 = pulseIn(CH1_PIN, HIGH);
+  CH1 = constrain(map(CH1, 994, 1988, 60, 120), 60, 120);
+  if (abs(90 - CH1) <= 3) {
+    CH1 = 90;
+  }
+
+  CH2 = pulseIn(CH2_PIN, HIGH);
+  CH2 = constrain(map(CH2, 987, 1973, -255, 255), -255, 255);
+  if (abs(CH2) < 30) {
+    CH2 = 0;
+  }
+
+  CH5 = (pulseIn(CH5_PIN, HIGH) - RC_CENTER_PULSE);
+}
+
+void SET_MOTORS(int velocidade) {
+  if (velocidade >= 0) {
+    analogWrite(RPWM_PIN, velocidade);
+    analogWrite(LPWM_PIN, 0);
+  } else {
+    analogWrite(RPWM_PIN, 0);
+    analogWrite(LPWM_PIN, -velocidade);
+  }
+}
+
+void SET_SERVOS(int angle) {
   servoEsqFrente.write(angle);
   servoDirFrente.write(angle);
-
   servoEsqTras.write(90 - angle);
   servoDirTras.write(90 - angle);
 }
 
 void controlarServoBraco();
-
-void lerControle(void) {
-  CH1 = (pulseIn(CH1_PIN, HIGH) - RC_CENTER_PULSE);
-  if (CH1 == -RC_CENTER_PULSE) {
-    CH1 = 90;
-  } else if ((abs(CH1) < 90)) {
-    CH1 = 90;
-  } else {
-  CH1 = CH1 * RC_SCALE_FACTOR;
-
-  CH1 = constrain(CH1, -255, 255);
-  CH1 = map(CH1, -255, 255, 60, 120);
-  }
-
-  CH3 = (pulseIn(CH3_PIN, HIGH) - RC_CENTER_PULSE);
-  if (CH3 == -RC_CENTER_PULSE){
-    CH3 = 0;
-  } else if ((abs(CH3) < DEADZONE_WIDTH)) {
-    CH3 = 0;
-  } else {
-  CH3 = CH3 * RC_SCALE_FACTOR;
-
-  CH3 = constrain(CH3, -255, 255);
-  }
-
-  CH5 = (pulseIn(CH5_PIN, HIGH) - RC_CENTER_PULSE);
-}
